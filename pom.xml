@@ -44,7 +44,7 @@
         <graphstore.version>0.7.3</graphstore.version>
 
         <!-- JMH version -->
-        <jmh.version>1.36</jmh.version>
+        <jmh.version>1.37</jmh.version>
 
         <!-- Java source/target to use for compilation. -->
         <javac.target>17</javac.target>
