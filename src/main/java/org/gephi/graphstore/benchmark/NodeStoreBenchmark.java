@@ -3,7 +3,6 @@ package org.gephi.graphstore.benchmark;
 import java.util.concurrent.TimeUnit;
 import org.gephi.graph.api.Node;
 import org.gephi.graph.impl.GraphStore;
-import org.gephi.graph.impl.NodeImpl;
 import org.gephi.graphstore.benchmark.util.Generator;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
@@ -29,7 +28,7 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
 public class NodeStoreBenchmark {
 
-    @Param({ "1000", "10000", "100000", "1000000"})
+    @Param({"1000", "10000", "100000", "1000000"})
     public int nodes;
 
     private GraphStore store;

@@ -1,5 +1,7 @@
 package org.gephi.graphstore.benchmark;
 
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.concurrent.TimeUnit;
 import org.gephi.graph.api.Edge;
 import org.gephi.graph.api.Node;
@@ -63,6 +65,17 @@ public class EdgeStoreBenchmark {
     @Measurement(iterations = 5)
     @Warmup(iterations = 1)
     @BenchmarkMode(Mode.AverageTime)
+    public GraphStore iterateViaStream(Blackhole blackhole) {
+        Spliterators.spliteratorUnknownSize(store.getEdges().iterator(), Spliterator.NONNULL | Spliterator.ORDERED)
+            .forEachRemaining(
+                blackhole::consume);
+        return store;
+    }
+
+    @Benchmark
+    @Measurement(iterations = 5)
+    @Warmup(iterations = 1)
+    @BenchmarkMode(Mode.AverageTime)
     public GraphStore iterateNeighborsOut(Blackhole blackhole) {
         for (Node node : store.getNodes()) {
             for (Edge edge : store.getOutEdges(node)) {
@@ -92,7 +105,7 @@ public class EdgeStoreBenchmark {
     @Warmup(iterations = 1)
     @BenchmarkMode(Mode.AverageTime)
     public GraphStore iterateType(Blackhole blackhole) {
-        for(int type=0; type<TYPE_COUNT; type++) {
+        for (int type = 0; type < TYPE_COUNT; type++) {
             for (Edge edge : store.getEdges(type)) {
                 blackhole.consume(edge);
             }
