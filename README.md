@@ -1,6 +1,7 @@
 # GraphStore Benchmark
 
-[JMH](https://github.com/openjdk/jmh) based micro-benchmark for the [GraphStore](https://github.com/gephi/graphstore) library.
+[JMH](https://github.com/openjdk/jmh) based micro-benchmark for the [GraphStore](https://github.com/gephi/graphstore)
+library.
 
 ## Build
 

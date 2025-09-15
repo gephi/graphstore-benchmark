@@ -1,9 +1,9 @@
 package org.gephi.graphstore.benchmark;
 
 import java.util.concurrent.TimeUnit;
-import org.gephi.graph.api.Edge;
-import org.gephi.graph.api.Node;
+import org.gephi.graph.api.GraphFactory;
 import org.gephi.graph.impl.GraphStore;
+import org.gephi.graphstore.benchmark.draft.DraftNode;
 import org.gephi.graphstore.benchmark.util.Generator;
 import org.gephi.graphstore.benchmark.util.MemoryProfiler;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -19,7 +19,6 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Warmup;
-import org.openjdk.jmh.infra.Blackhole;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
@@ -28,68 +27,41 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 @State(Scope.Thread)
 @Fork(warmups = 0, value = 1)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
-public class EdgeStoreBenchmark {
+public class NodeStoreConstructionBenchmark {
 
-    @Param({"100", "1000", "10000", "100000"})
+    @Param({"100", "1000", "10000", "100000", "1000000"})
     public int nodes;
 
-    private final static int EDGES_PER_NODE = 10;
-
-    private GraphStore store;
+    private Generator generator;
 
     @Setup(Level.Trial)
-    public void setUp() {
-        Generator generator = Generator.generate(nodes, nodes * EDGES_PER_NODE);
-        store = generator.build();
+    public void setUpTrial() {
+        generator = Generator.generate(nodes, 0).withNothing();
     }
 
     @TearDown(Level.Trial)
     public void tearDown() {
-        store = null;
+        generator = null;
     }
 
     @Benchmark
     @Measurement(iterations = 10)
     @Warmup(iterations = 1)
     @BenchmarkMode(Mode.SingleShotTime)
-    public GraphStore iterate(Blackhole blackhole) {
-        for (Edge edge : store.getEdges()) {
-            blackhole.consume(edge);
-        }
-        return store;
-    }
+    public GraphStore pushAll() {
+        final GraphStore store = generator.build();
+        final GraphFactory factory = store.getModel().factory();
 
-    @Benchmark
-    @Measurement(iterations = 10)
-    @Warmup(iterations = 1)
-    @BenchmarkMode(Mode.SingleShotTime)
-    public GraphStore iterateNeighborsOut(Blackhole blackhole) {
-        for (Node node : store.getNodes()) {
-            for (Edge edge : store.getOutEdges(node)) {
-                blackhole.consume(edge);
-            }
-            blackhole.consume(node);
+        for (DraftNode dn : generator.getNodes()) {
+            store.addNode(factory.newNode(dn.getId()));
         }
-        return store;
-    }
 
-    @Benchmark
-    @Measurement(iterations = 10)
-    @Warmup(iterations = 1)
-    @BenchmarkMode(Mode.SingleShotTime)
-    public GraphStore iterateNeighborsInOut(Blackhole blackhole) {
-        for (Node node : store.getNodes()) {
-            for (Edge edge : store.getInEdges(node)) {
-                blackhole.consume(edge);
-            }
-            blackhole.consume(node);
-        }
         return store;
     }
 
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
-            .include(EdgeStoreBenchmark.class.getSimpleName())
+            .include(NodeStoreConstructionBenchmark.class.getSimpleName())
             .addProfiler(MemoryProfiler.class)
             .build();
 

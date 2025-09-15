@@ -1,13 +1,10 @@
 package org.gephi.graphstore.benchmark;
 
-import java.util.List;
 import java.util.concurrent.TimeUnit;
-import org.gephi.graph.api.Configuration;
 import org.gephi.graph.api.Node;
+import org.gephi.graph.impl.GraphStore;
 import org.gephi.graph.impl.NodeImpl;
-import org.gephi.graph.impl.NodeStore;
-import org.gephi.graphstore.benchmark.util.MemoryProfiler;
-import org.gephi.graphstore.benchmark.util.RandomGraph;
+import org.gephi.graphstore.benchmark.util.Generator;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -19,6 +16,7 @@ import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
+import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.infra.Blackhole;
 import org.openjdk.jmh.runner.Runner;
@@ -28,67 +26,41 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 @State(Scope.Thread)
 @Fork(warmups = 0, value = 1)
-@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@OutputTimeUnit(TimeUnit.MICROSECONDS)
 public class NodeStoreBenchmark {
 
     @Param({"100", "1000", "10000", "100000", "1000000"})
     public int nodes;
 
-    private List<Node> nodeList;
+    private GraphStore store;
 
-    private NodeStore nodeStore;
-
-    @Setup(Level.Iteration)
+    @Setup(Level.Trial)
     public void setUp() {
-        final Configuration config = new Configuration();
-        config.setEdgeIdType(Integer.class);
-        config.setNodeIdType(Integer.class);
-        final RandomGraph graph = new RandomGraph(nodes, 0, config).generate();
-        nodeStore = graph.getStore().getNodeStore();
-        nodeList = graph.getNodes();
+        Generator generator = Generator.generate(nodes, 0);
+        store = generator.withOnlyNodes().build();
     }
 
-    @Benchmark
-    @Measurement(iterations = 10)
-    @Warmup(iterations = 1)
-    @BenchmarkMode(Mode.SingleShotTime)
-    public NodeStore pushAll() {
-        nodeStore.clear();
-        nodeStore.addAll(nodeList);
-        return nodeStore;
+    @TearDown(Level.Trial)
+    public void tearDown() {
+        store = null;
     }
 
+
     @Benchmark
-    @Measurement(iterations = 10)
+    @Measurement(iterations = 8)
     @Warmup(iterations = 1)
-    @BenchmarkMode(Mode.SingleShotTime)
-    public NodeStore iterate(Blackhole blackhole) {
-        for (Node node : nodeStore) {
+    @BenchmarkMode(Mode.AverageTime)
+    public GraphStore iterate(Blackhole blackhole) {
+        for (Node node : store.getNodes()) {
             NodeImpl b = (NodeImpl) node;
             blackhole.consume(b);
         }
-        return nodeStore;
-    }
-
-    @Benchmark
-    @Measurement(iterations = 10)
-    @Warmup(iterations = 1)
-    @BenchmarkMode(Mode.SingleShotTime)
-    public NodeStore reset() {
-        for (Node node : nodeList) {
-            NodeImpl b = (NodeImpl) node;
-            nodeStore.remove(b);
-        }
-        for (Node n : nodeList) {
-            nodeStore.add(n);
-        }
-        return nodeStore;
+        return store;
     }
 
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
             .include(NodeStoreBenchmark.class.getSimpleName())
-            .addProfiler(MemoryProfiler.class)
             .build();
 
         new Runner(opt).run();
