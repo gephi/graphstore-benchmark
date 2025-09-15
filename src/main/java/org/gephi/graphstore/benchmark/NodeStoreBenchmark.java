@@ -29,7 +29,7 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
 public class NodeStoreBenchmark {
 
-    @Param({"100", "1000", "10000", "100000", "1000000"})
+    @Param({ "1000", "10000", "100000", "1000000"})
     public int nodes;
 
     private GraphStore store;
@@ -47,13 +47,26 @@ public class NodeStoreBenchmark {
 
 
     @Benchmark
-    @Measurement(iterations = 8)
+    @Measurement(iterations = 5)
     @Warmup(iterations = 1)
     @BenchmarkMode(Mode.AverageTime)
     public GraphStore iterate(Blackhole blackhole) {
         for (Node node : store.getNodes()) {
-            NodeImpl b = (NodeImpl) node;
-            blackhole.consume(b);
+            blackhole.consume(node);
+        }
+        return store;
+    }
+
+    @Benchmark
+    @Measurement(iterations = 5)
+    @Warmup(iterations = 1)
+    @BenchmarkMode(Mode.AverageTime)
+    public GraphStore neighbors(Blackhole blackhole) {
+        for (Node node : store.getNodes()) {
+            for (Node neighbor : store.getNeighbors(node)) {
+                blackhole.consume(neighbor);
+            }
+            blackhole.consume(node);
         }
         return store;
     }

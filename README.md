@@ -15,6 +15,8 @@ The extra memory profiler is optional and will print the memory usage of the ben
 
 ## Changelog
 
+* 0.2.0
+    * Refactor and simplify `Generator` usage. Add new benchmarks.
 * 0.1.0
     * Initial release, simply porting what we used to have in the GraphStore repository.
 
