@@ -15,6 +15,11 @@ The extra memory profiler is optional and will print the memory usage of the ben
 
 ## Changelog
 
+* 0.3.0
+    * Upgrade to GraphStore 0.8.6 and JMH 1.37.
+    * Add spatial index benchmarks (node, edge, node view).
+    * Add node view creation/stream and edge/node stream benchmarks.
+    * Add serialization benchmark covering single- and multi-chunk graphs.
 * 0.2.0
     * Refactor and simplify `Generator` usage. Add new benchmarks.
 * 0.1.0
