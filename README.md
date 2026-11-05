@@ -15,6 +15,8 @@ The extra memory profiler is optional and will print the memory usage of the ben
 
 ## Changelog
 
+* 0.3.1
+    * Upgrade to GraphStore 0.8.12.
 * 0.3.0
     * Upgrade to GraphStore 0.8.6 and JMH 1.37.
     * Add spatial index benchmarks (node, edge, node view).
